@@ -50,6 +50,6 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
             { type: 'template', value: { number, code } }
                 unless numbers.has number
                     throw new ReferenceError `Undefined number '${number}'`
-                return.value += indent.repeat(indentationLevel + 1) + code.repeat(numbers.get(number)!) + '\n'
+                return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
 
 export default compile as (ast: Ast.Program, indent: string) => string

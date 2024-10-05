@@ -6,7 +6,7 @@ yargs from yargs
 parse from ./parser.civet
 compile from ./compiler.civet
 
-var run
+let run
 try
     run_ from ./qdeql.civet
     run = run_
@@ -20,7 +20,7 @@ encodings: readonly BufferEncoding[] :=
     . 'utf-8'
     . 'utf8'
 
-argBuilder := yargs process.argv[2...]
+argv := await yargs process.argv[2...]
     .alias h: 'help'
     .positional 'filename',
         describe: 'What file to use as input'
@@ -56,24 +56,15 @@ argBuilder := yargs process.argv[2...]
                           Argument: encoding, Given: "${enc}", Choices: "${encodings.join '", "'}"
                         ```
                 return littleEnc as BufferEncoding
+        run:
+            alias: 'r'
+            conflicts: ['a', 'o', 't']
+            describe: 'Run the Qdeql code rather than outputting it'
+            type: 'boolean'
+            hidden: not run?
+            coerce: unless run? then => throw new Error "--run may only be specified when std-queue is installed"
     .strict()
-
-if run?
-    argBuilder.option 'run',
-        alias: 'r'
-        conflicts: ['a', 'o', 't']
-        describe: 'Run the Qdeql code rather than outputting it'
-        type: 'boolean'
-else
-    argBuilder.option 'run',
-        alias: 'r'
-        conflicts: ['a', 'o', 't']
-        hidden: true
-        type: 'boolean'
-        coerce: =>
-            throw new Error "--run may only be specified when std-queue is installed"
-
-argv := await argBuilder.argv
+    .argv
 
 makeErrorString := (err: ???) =>
     if err <? Error
@@ -103,7 +94,7 @@ process.exitCode = do =>
                 console.error makeErrorString err
             return 1
 
-    if argv.run?
+    if argv.run
         try run! result catch err
             if err <? AssertionError
                 console.error `DEBUG ASSERTION FAILED`

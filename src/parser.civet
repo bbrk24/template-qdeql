@@ -64,7 +64,7 @@ processExpression := (expr: string) =>
     
     splitsAndEmpty := expr.split /(\+|_|\p{Letter}+|[0-9]+)/gv
     splits := splitsAndEmpty.flatMap (el, i) =>
-        if i % 2
+        if i % 2 is 0
             assert => el is ''
             []
         else
