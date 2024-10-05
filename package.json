@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@danielx/civet": "^0.7.32"
+  }
+}
