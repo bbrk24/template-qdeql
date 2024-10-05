@@ -1,0 +1,39 @@
+assert from ./assert.civet
+
+export interface Token
+    // Returns the length of the match, or -1 if the string does not start with a match
+    matchLength(str: string): number
+
+regexpToken := (regexp: RegExp): Token =>
+    assert => regexp.hasIndices and not (or) regexp.sticky, regexp.global
+    {
+        matchLength(str)
+            if pair? := regexp.exec(str)?.indices![0]
+                return pair[1] if pair[0] is 0
+            -1
+    }
+
+stringToken := (tokenStr: string): Token =>
+    { matchLength(str) do if str.startsWith tokenStr then tokenStr# else -1 }
+
+// This doesn't *need* to be comptime, but producing regex literals rather than calling the RegExp
+// c'tor directly should be more efficient, right? :clueless:
+[whitespaceRegexp, newlinesRegexp, commentRegexp] := comptime 
+    newlines := String.raw'[\n\v\f\r\x85\u2028\u2029]'
+    return [
+        new RegExp `[\\s--${newlines}]+`, 'dv'
+        new RegExp newlines + '+', 'du'
+        new RegExp `#.*(?=${newlines})`, 'du'
+    ]
+
+export tokens := {
+    qdeql: regexpToken /[\\/=*&-]+/d
+    whitespace: regexpToken whitespaceRegexp
+    newlines: regexpToken newlinesRegexp
+    functionStart: regexpToken /\p{Letter}+\{/dv
+    functionEnd: stringToken '}'
+    numberDefinition: regexpToken /\p{Letter}+:[0-9+_\p{Letter}]+/dv
+    template: regexpToken /\p{Letter}+::[\\\/=*\&\-]+/dv
+    comment: regexpToken commentRegexp
+    functionCall: regexpToken /\p{Letter}+(?=\s|\x85|$)/dmv
+} as const

@@ -1,0 +1,16 @@
+export QdeqlCode ::= string & ArrayLike<'&' | '*' | '/' | '=' | '\\' | '-'>
+
+export NumberSyntaxTree ::=
+    | type: 'literal', value: number
+    | type: 'variable', value: string
+    | type: 'addition', value: [NumberSyntaxTree, NumberSyntaxTree]
+    | type: 'subtraction', value: [NumberSyntaxTree, NumberSyntaxTree]
+
+export CodeSegment ::=
+    | type: 'code', value: QdeqlCode
+    | type: 'function', value: { name: string, contents: CodeSegment[] }
+    | type: 'definition', value: { name: string, contents: NumberSyntaxTree }
+    | type: 'template', value: { number: string, code: QdeqlCode }
+    | type: 'functionCall', value: string
+
+export Program ::= CodeSegment[]

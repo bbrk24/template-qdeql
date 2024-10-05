@@ -1,0 +1,8 @@
+{ env } from node:process
+{ ok } from node:assert
+
+export default assert :=
+    if env.DEBUG
+        (cond: => boolean) => ok(cond())
+    else
+        =>

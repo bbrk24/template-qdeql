@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "lib": ["ES2023", "ESNext.Regexp"],
+        "target": "ESNext",
+        "module": "ES2022"
+    }
+}

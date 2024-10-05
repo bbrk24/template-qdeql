@@ -1,0 +1,121 @@
+'civet coffeeDo'
+
+{ AssertionError } from node:assert
+{ readFileSync, writeFileSync } from node:fs
+yargs from yargs
+parse from ./parser.civet
+compile from ./compiler.civet
+
+var run
+try
+    run_ from ./qdeql.civet
+    run = run_
+
+encodings: readonly BufferEncoding[] :=
+    . 'ascii'
+    . 'latin1'
+    . 'ucs-2'
+    . 'ucs2'
+    . 'utf16le'
+    . 'utf-8'
+    . 'utf8'
+
+argBuilder := yargs process.argv[2...]
+    .alias h: 'help'
+    .positional 'filename',
+        describe: 'What file to use as input'
+        type: 'string'
+    .demandCommand()
+    .options
+        output:
+            alias: 'o'
+            describe: 'Where to write the Qdeql code to (default: stdout)'
+            normalize: true
+            type: 'string'
+        indent:
+            alias: 't'
+            describe: 'What string to use for indentation (default: 2 spaces)'
+            type: 'string'
+        'ast-only':
+            alias: 'a'
+            describe: 'Only emit the AST'
+            type: 'boolean'
+        encoding:
+            alias: 'e'
+            choices: encodings
+            default: 'utf8'
+            describe: 'What encoding to use for input' // output is always ASCII
+            coerce: (enc) =>
+                // ignore case, and allow 'utf-16le' as a synonym for 'utf16le'
+                littleEnc := enc.toLowerCase()
+                return 'utf16le' if littleEnc is 'utf-16le'
+                if littleEnc is not in encodings
+                    // throw an error indicating an invalid encoding
+                    throw new Error ```
+                        Invalid values:
+                          Argument: encoding, Given: "${enc}", Choices: "${encodings.join '", "'}"
+                        ```
+                return littleEnc as BufferEncoding
+    .strict()
+
+if run?
+    argBuilder.option 'run',
+        alias: 'r'
+        conflicts: ['a', 'o', 't']
+        describe: 'Run the Qdeql code rather than outputting it'
+        type: 'boolean'
+else
+    argBuilder.option 'run',
+        alias: 'r'
+        conflicts: ['a', 'o', 't']
+        hidden: true
+        type: 'boolean'
+        coerce: =>
+            throw new Error "--run may only be specified when std-queue is installed"
+
+argv := await argBuilder.argv
+
+makeErrorString := (err: ???) =>
+    if err <? Error
+        `${err.name}: ${err.message}`
+    else
+        String err
+
+process.exitCode = do =>
+    input := try readFileSync argv._.0, { argv.encoding } catch err
+        console.error `Could not read file: ${makeErrorString err}`
+        return 1
+
+    ast := try parse input catch err
+        if err <? AssertionError
+            console.error `DEBUG ASSERTION FAILED`
+            console.error err
+        else
+            console.error makeErrorString err
+        return 1
+    
+    result := if argv.astOnly then JSON.stringify ast else
+        try compile ast, argv.indent ?? '  ' catch err
+            if err <? AssertionError
+                console.error `DEBUG ASSERTION FAILED`
+                console.error err
+            else
+                console.error makeErrorString err
+            return 1
+
+    if argv.run?
+        try run! result catch err
+            if err <? AssertionError
+                console.error `DEBUG ASSERTION FAILED`
+                console.error err
+            else
+                console.error makeErrorString err
+            return 1
+    else if argv.output?
+        try writeFileSync argv.output, result catch err
+            console.error `Could not save program: ${makeErrorString err}`
+            return 1
+    else
+        console.log result.trimEnd()
+
+    return 0

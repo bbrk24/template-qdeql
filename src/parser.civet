@@ -1,0 +1,101 @@
+{ fail } from node:assert
+{ tokens } from ./tokens.civet
+type * as Ast from ./astTypes.civet
+assert from ./assert.civet
+
+TokenType ::= keyof typeof tokens
+
+class TokenStream <: Iterable<[string, TokenType]>
+    #program: string
+
+    constructor(#program: string)
+
+    *[Symbol.iterator]()
+        :outer while #program#
+            for [_type, token] of Object.entries(tokens)
+                // https://github.com/DanielXMoore/Civet/issues/1415
+                type := _type as TokenType
+
+                length := token.matchLength #program
+                if length > 0
+                    chunk := #program[...length]
+                    #program |>= &[length...]
+                    yield [chunk, type] as tuple
+                    continue outer
+            throw new SyntaxError `Unrecognized token starting with '${#program[0]}'`
+        ;
+
+function* collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean)
+    next .= iter.next()
+    until next.done
+        break if pred next.value
+        yield next.value
+        next = iter.next()
+
+processExpression := (expr: string) =>
+    processSplits := (parts: string[]): Ast.NumberSyntaxTree =>
+        if parts# % 2 is 0
+            throw new SyntaxError `Incomplete expression: '${parts.join ''}'`
+        if parts# > 2
+            type := switch parts.-2
+                '+'
+                    'addition' as const
+                '_'
+                    'subtraction' as const
+                else
+                    throw new SyntaxError `Missing operator in expression containing '${parts[-3...].join ''}'`
+            {
+                type
+                value:
+                    . processSplits parts[...-2]
+                    . processSplits [parts.-1] 
+            }
+        else
+            part := parts.0
+            switch part
+                '+', '_'
+                    throw new SyntaxError 'Unexpected operator with no operands'
+                /\p{Letter}+/v
+                    type: 'variable', value: part
+                /[0-9]+/
+                    type: 'literal', value: Number part
+                else
+                    fail()
+    
+    splitsAndEmpty := expr.split /(\+|_|\p{Letter}+|[0-9]+)/gv
+    splits := splitsAndEmpty.flatMap (el, i) =>
+        if i % 2
+            assert => el is ''
+            []
+        else
+            [el]
+    return processSplits splits
+
+processTokenStream := (stream: IterableIterator<[string, TokenType]>): Ast.Program =>
+    for [content, type] of stream
+        switch type
+            'comment', 'newlines', 'whitespace'
+                ;
+            'functionCall'
+                type: 'functionCall' as const, value: content
+            'functionStart'
+                body := collectUntil stream, (t) => t.1 is 'functionEnd'
+                type: 'function' as const, value: { name: content[...-1], contents: processTokenStream body }
+            'qdeql'
+                type: 'code' as const, value: content as Ast.QdeqlCode
+            'numberDefinition'
+                [name, expr] := content.split ':'
+                contents := processExpression expr
+                type: 'definition' as const, value: { name, contents }
+            'template'
+                [number, code] := content.split '::'
+                type: 'template' as const, value: { number, code as Ast.QdeqlCode }
+            else
+                throw new SyntaxError `Unexpected token '${content}'`
+
+export default parse := (program: string) =>
+    stream := new TokenStream program
+    processTokenStream stream[Symbol.iterator]()
+            
+    
+    

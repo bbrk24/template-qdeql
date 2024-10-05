@@ -1,0 +1,55 @@
+{ fail } from node:assert
+type * as Ast from ./astTypes.civet
+
+let functions: Map<string, Ast.Program>
+let numbers: Map<string, number>
+
+evaluateNumber := (expr: Ast.NumberSyntaxTree): number =>
+    switch expr
+        { type: 'literal', value }
+            value
+        { type: 'variable', value: name }
+            unless numbers.has name
+                throw new ReferenceError `Undefined number '${name}'`
+            numbers.get(name)!
+        { type: 'addition', value: [left, right] }
+            (+)
+                evaluateNumber left
+                evaluateNumber right
+        { type: 'subtraction', value: [left, right] }
+            (-)
+                evaluateNumber left
+                evaluateNumber right
+        else
+            fail()
+
+compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
+    if indentationLevel is 0
+        functions = new Map
+        numbers = new Map
+
+    return = ''
+
+    for node of ast
+        switch node
+            { type: 'code', value: code }
+                return.value += indent.repeat(indentationLevel) + code + '\n'
+            { type: 'function', value: { name, contents } }
+                if functions.has name
+                    throw new SyntaxError `Function '${name}' defined twice`
+                functions.set name, contents
+            { type: 'definition', value: { name, contents } }
+                numbers.set name, evaluateNumber contents
+            { type: 'functionCall', value: name }
+                unless functions.has name
+                    throw new ReferenceError `Call to undefined function '${name}'`
+                return.value += compile
+                    functions.get(name)!
+                    indent
+                    indentationLevel + 1
+            { type: 'template', value: { number, code } }
+                unless numbers.has number
+                    throw new ReferenceError `Undefined number '${number}'`
+                return.value += indent.repeat(indentationLevel + 1) + code.repeat(numbers.get(number)!) + '\n'
+
+export default compile as (ast: Ast.Program, indent: string) => string
