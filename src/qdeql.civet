@@ -64,5 +64,3 @@ export default run := (s: string, enc: BufferEncoding): Promise<void> =>
                     continue
     finally
         reader.close()
-        // https://github.com/DanielXMoore/Civet/issues/1424
-        stdout.write '\n'
