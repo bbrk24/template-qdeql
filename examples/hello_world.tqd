@@ -1,0 +1,24 @@
+# Inverted ASCII table
+H:256_72
+e:256_101
+l:256_108
+o:256_111
+comma:256_44
+space:256_32
+W:256_87
+r:256_114
+d:256_100
+exclamationPoint:256_33
+
+H::- *
+e::- *
+l::- * l::- *
+o::- *
+comma::- *
+space::- *
+W::- *
+o::- *
+r::- *
+l::- *
+d::- *
+exclamationPoint::- *
