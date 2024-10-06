@@ -33,7 +33,7 @@ export tokens := {
     functionStart: regexpToken /\p{Letter}+\{/dv
     functionEnd: stringToken '}'
     numberDefinition: regexpToken /\p{Letter}+:[0-9+_\p{Letter}]+/dv
-    template: regexpToken /\p{Letter}+::(?:\p{Letter}+|[\\\/=*\&\-]+)/dv
+    template: regexpToken /\p{Letter}+::(?:\p{Letter}+(?=\s|\x85|$)|[\\\/=*\&\-]+)/dmv
     comment: regexpToken commentRegexp
     functionCall: regexpToken /\p{Letter}+(?=\s|\x85|$)/dmv
 } as const
