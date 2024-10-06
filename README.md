@@ -29,3 +29,9 @@ Template Qdeql adds the following features to Qdeql:
   ```
 
 Because this uses characters otherwise ignored in Qdeql, comments must start with `#`.
+
+## Using Template Qdeql
+
+You can run Template Qdeql directly with `civet src/index.civet` if you have Civet installed globally (using `npx civet` to use the local Civet doesn't work -- see [this issue](https://github.com/npm/cli/issues/7821)). Alternatively, you can compile to JS using `npm run build`, and then run `node dist/index.mjs`.
+
+After running `npm run build`, you may `npm i -g .` to add template-qdeql to your PATH as `tqdeql`.

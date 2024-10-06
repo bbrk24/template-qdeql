@@ -1,9 +1,10 @@
 { fail } from node:assert
-{ tokens } from ./tokens.civet
+{ tokens, type Token } from ./tokens.civet
 type * as Ast from ./astTypes.civet
 assert from ./assert.civet
 
 TokenType ::= keyof typeof tokens
+tokenEntries := Object.entries(tokens) as [TokenType, Token][]
 
 class TokenStream <: Iterable<[string, TokenType]>
     #program: string
@@ -12,10 +13,7 @@ class TokenStream <: Iterable<[string, TokenType]>
 
     *[Symbol.iterator]()
         :outer while #program#
-            for [_type, token] of Object.entries(tokens)
-                // https://github.com/DanielXMoore/Civet/issues/1415
-                type := _type as TokenType
-
+            for [type, token] of tokenEntries
                 length := token.matchLength #program
                 if length > 0
                     chunk := #program[...length]
@@ -25,12 +23,11 @@ class TokenStream <: Iterable<[string, TokenType]>
             throw new SyntaxError `Unrecognized token starting with '${#program[0]}'`
         ;
 
-function* collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean)
-    next .= iter.next()
-    until next.done
-        break if pred next.value
+function* collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean): Generator<T, void>
+    loop
+        next := iter.next()
+        break if next.done or pred next.value
         yield next.value
-        next = iter.next()
 
 processExpression := (expr: string) =>
     processSplits := (parts: string[]): Ast.NumberSyntaxTree =>
@@ -82,14 +79,14 @@ processTokenStream := (stream: IterableIterator<[string, TokenType]>): Ast.Progr
                 body := collectUntil stream, (t) => t.1 is 'functionEnd'
                 type: 'function' as const, value: { name: content[...-1], contents: processTokenStream body }
             'qdeql'
-                type: 'code' as const, value: content as Ast.QdeqlCode
+                type: 'code' as const, value: content
             'numberDefinition'
                 [name, expr] := content.split ':'
                 contents := processExpression expr
                 type: 'definition' as const, value: { name, contents }
             'template'
                 [number, code] := content.split '::'
-                type: 'template' as const, value: { number, code as Ast.QdeqlCode }
+                type: 'template' as const, value: { number, code }
             else
                 throw new SyntaxError `Unexpected token '${content}'`
 

@@ -1,5 +1,4 @@
 { writeSync } from node:fs
-{ stdout } from node:process
 
 // @ts-ignore
 stdQueue from std-queue

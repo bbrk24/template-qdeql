@@ -6,10 +6,7 @@ yargs from yargs
 parse from ./parser.civet
 compile from ./compiler.civet
 
-let run
-try
-    run_ from ./qdeql.civet
-    run = run_
+run := try run from ./qdeql.civet
 
 encodings: readonly BufferEncoding[] :=
     . 'ascii'
@@ -79,7 +76,7 @@ process.exitCode = do =>
 
     ast := try parse input catch err
         if err <? AssertionError
-            console.error `DEBUG ASSERTION FAILED`
+            console.error 'DEBUG ASSERTION FAILED'
             console.error err
         else
             console.error makeErrorString err
@@ -88,7 +85,7 @@ process.exitCode = do =>
     result := if argv.astOnly then JSON.stringify ast else
         try compile ast, argv.indent ?? '  ' catch err
             if err <? AssertionError
-                console.error `DEBUG ASSERTION FAILED`
+                console.error 'DEBUG ASSERTION FAILED'
                 console.error err
             else
                 console.error makeErrorString err
@@ -97,7 +94,7 @@ process.exitCode = do =>
     if argv.run
         try await run! result, argv.encoding catch err
             if err <? AssertionError
-                console.error `DEBUG ASSERTION FAILED`
+                console.error 'DEBUG ASSERTION FAILED'
                 console.error err
             else
                 console.error makeErrorString err

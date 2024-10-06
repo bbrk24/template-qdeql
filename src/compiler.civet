@@ -21,7 +21,7 @@ evaluateNumber := (expr: Ast.NumberSyntaxTree): number =>
                 evaluateNumber left
                 evaluateNumber right
         else
-            fail()
+            fail();
 
 compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
     if indentationLevel is 0

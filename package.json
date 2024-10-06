@@ -1,19 +1,35 @@
 {
-  "devDependencies": {
-    "@danielx/civet": "~0.7.32",
-    "@types/node": "^20.16.10",
-    "@types/yargs": "^17.0.33",
-    "typescript": "~5.6.2"
+  "name": "template-qdeql",
+  "license": "Apache-2.0",
+  "author": "Riley Baker <bbrk24@gmail.com>",
+  "files": [
+    "dist/*.mjs"
+  ],
+  "bin": {
+    "tqdeql": "dist/index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbrk24/template-qdeql.git"
+  },
+  "scripts": {
+    "build": "civet esbuild.civet"
   },
   "dependencies": {
     "yargs": "^17.7.2"
   },
+  "devDependencies": {
+    "@danielx/civet": "~0.7.33",
+    "@types/node": "~20.12.14",
+    "@types/yargs": "^17.0.33",
+    "esbuild": "~0.24.0",
+    "typescript": "~5.6.2"
+  },
+  "optionalDependencies": {
+    "std-queue": "~0.1.6"
+  },
   "engines": {
     "node": "^20.12.0 || >=21.3.0"
   },
-  "license": "Apache-2.0",
-  "private": true,
-  "optionalDependencies": {
-    "std-queue": "^0.1.6"
-  }
+  "private": true
 }

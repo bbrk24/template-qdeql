@@ -1,5 +1,3 @@
-export QdeqlCode ::= string & ArrayLike<'&' | '*' | '/' | '=' | '\\' | '-'>
-
 export NumberSyntaxTree ::=
     | type: 'literal', value: number
     | type: 'variable', value: string
@@ -7,10 +5,10 @@ export NumberSyntaxTree ::=
     | type: 'subtraction', value: [NumberSyntaxTree, NumberSyntaxTree]
 
 export CodeSegment ::=
-    | type: 'code', value: QdeqlCode
+    | type: 'code', value: string
     | type: 'function', value: { name: string, contents: CodeSegment[] }
     | type: 'definition', value: { name: string, contents: NumberSyntaxTree }
-    | type: 'template', value: { number: string, code: QdeqlCode }
+    | type: 'template', value: { number: string, code: string }
     | type: 'functionCall', value: string
 
 export Program ::= CodeSegment[]
