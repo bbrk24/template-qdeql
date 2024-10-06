@@ -27,6 +27,7 @@ Template Qdeql adds the following features to Qdeql:
   n::=
   # compiles to "====="
   ```
+  A repetition may include Qdeql code, or a function call, but not both.
 
 Because this uses characters otherwise ignored in Qdeql, comments must start with `#`.
 
