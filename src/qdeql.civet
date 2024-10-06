@@ -1,4 +1,4 @@
-{ readSync, writeSync } from node:fs
+{ writeSync } from node:fs
 { stdout } from node:process
 
 // @ts-ignore
@@ -16,52 +16,53 @@ declare class StdQueue<T>
 Queue := stdQueue.'default' as typeof StdQueue
 
 assert from ./assert.civet
-
-getchar := =>
-    buf := Buffer.alloc 1
-    readSync 0, buf, { #: 1 }
-    buf.0
+StdinReader from ./getchar.civet
 
 putchar := (char: number): void =>
     assert => (char & 0xff) is char
     buf := Buffer.from [char]
     writeSync 1, buf, 0, 1
 
-export default run := (s: string): void =>
+export default run := (s: string, enc: BufferEncoding): Promise<void> =>
+    reader := new StdinReader enc
+
     q := new Queue<number>
     openSlashLocations: number[] := []
 
-    for i .= 0; i < s#; ++i
-        switch s[i]
-            '='
-                front := q.shift() ?? 0
-                q.push front
-            '-'
-                front .= q.shift() ?? 0
-                front = (front - 1) %% 256
-                q.push front
-            '*'
-                front := q.shift() ?? 0
-                putchar front
-            '&'
-                q.push getchar()
-            '\\'
-                front := q.shift()
-                if front
-                    openSlashLocations.push i
-                    q.push front, 0, 0
+    try
+        for i .= 0; i < s#; ++i
+            switch s[i]
+                '='
+                    front := q.shift() ?? 0
+                    q.push front
+                '-'
+                    front .= q.shift() ?? 0
+                    front = (front - 1) %% 256
+                    q.push front
+                '*'
+                    front := q.shift() ?? 0
+                    putchar front
+                '&'
+                    q.push await reader.getchar()
+                '\\'
+                    front := q.shift()
+                    if front
+                        openSlashLocations.push i
+                        q.push front, 0, 0
+                    else
+                        slashCount .= 0
+                        while slashCount >= 0
+                            ++i
+                            if i >= s#
+                                throw new SyntaxError "Mismatched slashes (missing /)"
+                            ++slashCount if s[i] is '\\'
+                            --slashCount if s[i] is '/'
+                '/'
+                    i = openSlashLocations.pop() ?? throw new SyntaxError 'Mismatched slashes (missing \\)'
+                    --i // to counteract the ++ normally found at the end of the loop
                 else
-                    slashCount .= 0
-                    while slashCount >= 0
-                        ++i
-                        if i >= s#
-                            throw new SyntaxError "Mismatched slashes (missing /)"
-                        ++slashCount if s[i] is '\\'
-                        --slashCount if s[i] is '/'
-            '/'
-                i = openSlashLocations.pop() ?? throw new SyntaxError 'Mismatched slashes (missing \\)'
-                --i // to counteract the ++ normally found at the end of the loop
-            else
-                continue
-    // There's no way I'm aware of to flush stdout without writing a newline. Thanks node.
-    stdout.write '\n'
+                    continue
+    finally
+        reader.close()
+        // https://github.com/DanielXMoore/Civet/issues/1424
+        stdout.write '\n'

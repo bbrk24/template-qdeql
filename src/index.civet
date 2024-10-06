@@ -95,7 +95,7 @@ process.exitCode = do =>
             return 1
 
     if argv.run
-        try run! result catch err
+        try await run! result, argv.encoding catch err
             if err <? AssertionError
                 console.error `DEBUG ASSERTION FAILED`
                 console.error err
@@ -110,3 +110,4 @@ process.exitCode = do =>
         console.log result.trimEnd()
 
     return 0
+|> await

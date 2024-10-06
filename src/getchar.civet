@@ -1,0 +1,53 @@
+{ read } from node:fs
+{ stdin } from node:process
+{ createInterface, type Interface } from node:readline
+{ promisify } from node:util
+assert from ./assert.civet
+
+readAsync := promisify(read)
+
+// This is ridiculous.
+export default class StdinReader
+    #rl: Interface?
+    #buffer: Buffer?
+    #closed = false
+    #resolve: (=>)?
+
+    constructor(enc: BufferEncoding)
+        if stdin.isTTY
+            #rl = createInterface input: stdin
+                .on 'line', (line) =>
+                    if #buffer?
+                        #buffer = Buffer.concat [#buffer, Buffer.from line + '\n', enc]
+                    else
+                        #buffer = Buffer.from line + '\n', enc
+                    #resolve?.()
+                    #resolve = undefined
+                .once 'close', =>
+                    #closed = true
+                    // If a reader was waiting on input and the buffer is empty, it needs a 0
+                    if #resolve? and not #buffer?#
+                        #buffer = Buffer.alloc 1
+                        #resolve()
+                        #resolve = undefined
+    
+    getchar()
+        if #closed and not #buffer?#
+            return 0
+
+        if #rl?
+            unless #buffer?#
+                await new Promise<void> (#resolve=)
+                assert => #buffer?
+            return = #buffer!.0
+            #buffer = #buffer!.subarray 1
+        else
+            buf := Buffer.alloc 1
+            await readAsync 0, buf, 0, 1, null
+            return buf.0
+    
+    close()
+        #rl?.close() unless #closed
+        assert => not #resolve?
+        #closed = true
+        #rl = undefined
