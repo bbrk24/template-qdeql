@@ -1,0 +1,16 @@
+asciiZero:48
+
+& # get input
+asciiZero::- # Change it from ASCII 0/1 to actual 0/1
+\ # While not 0:
+  # Queue must be {1, 0, 0} now
+  = # skip the 1; queue is {0, 0, 1}
+  # Get an ASCII 1 in the queue:
+  asciiOne:49
+  asciiOne::-==
+  \-=-\/\/==/
+  * # print the ASCII 1
+/
+# Get an ASCII 0:
+asciiZero::- \=/= \--\/\/=/
+* # print the 0
