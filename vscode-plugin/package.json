@@ -1,0 +1,41 @@
+{
+    "name": "template-qdeql-plugin",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.94.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "tqdeql",
+                "aliases": [
+                    "Template Qdeql",
+                    "tqdeql"
+                ],
+                "extensions": [
+                    ".tqd"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "tqdeql",
+                "scopeName": "source.tqdeql",
+                "path": "./syntaxes/tqdeql.tmLanguage.json"
+            }
+        ]
+    },
+    "author": "bbrk24",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bbrk24/template-qdeql.git",
+        "directory": "vscode-plugin/"
+    },
+    "displayName": "Template Qdeql",
+    "license": "Apache-2.0",
+    "publisher": "bbrk24"
+}

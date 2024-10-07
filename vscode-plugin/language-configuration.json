@@ -1,0 +1,21 @@
+{
+    "comments": {
+        "lineComment": "#"
+    },
+    "autoClosingPairs": [
+        ["{", "}"],
+        ["\\", "/"]
+    ],
+    "surroundingPairs": [
+        ["{", "}"],
+        ["\\", "/"]
+    ],
+    "brackets": [
+        ["{", "}"]
+    ],
+    "colorizedBracketPairs": [
+        ["\\", "/"]
+    ],
+    "autoCloseBefore": "}/ \t\n",
+    "wordPattern": "\\p{Letter}+"
+}
