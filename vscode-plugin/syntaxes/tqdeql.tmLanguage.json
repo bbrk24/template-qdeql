@@ -8,21 +8,16 @@
             "match": "#.*"
         },
         {
+            "name": "variable.other.readwrite.tqdeql",
+            "match": "[A-Za-z]+(?=:)|(?<=[+_]|[A-Za-z]:)[A-Za-z]+"
+        },
+        {
             "name": "entity.name.function.tqdeql",
             "match": "[A-Za-z]+(?=\\{|\\s)"
         },
         {
-            "contentName": "meta.function.tqdeql",
-            "begin": "[A-Za-z]+\\{",
-            "end": "\\}"
-        },
-        {
             "name": "constant.numeric.tqdeql",
             "match": "[0-9]+"
-        },
-        {
-            "name": "variable.other.readwrite.tqdeql",
-            "match": "[A-Za-z]+(?=:)"
         },
         {
             "name": "keyword.operator.assignment.tqdeql",
@@ -36,6 +31,10 @@
             "name": "keyword.operator.tqdeql",
             "match": "::",
             "comment": "I have no idea what sub-scope of keyword.operator this should be"
+        },
+        {
+            "name": "invalid.illegal.tqdeql",
+            "match": "[~`!@$%^()\\[\\]|;'\"<>,.?]|(?<![A-Za-z])\\{"
         }
     ]
 }

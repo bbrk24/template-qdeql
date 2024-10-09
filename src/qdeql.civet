@@ -40,7 +40,12 @@ export default run := (s: string, enc: BufferEncoding): Promise<void> =>
                     q.push front
                 '*'
                     front := q.shift() ?? 0
-                    putchar front
+                    try
+                        putchar front
+                    catch e
+                        if e <? Error and e.message.startsWith 'EPIPE:'
+                            return
+                        throw e
                 '&'
                     q.push await reader.getchar()
                 '\\'

@@ -1,0 +1,269 @@
+# WIP: This doesn't handle the ending correctly.
+# It says "01 bottles" instead of "1 bottle", and prints out most of a verse for 0 before realizing it should have stopped.
+# That being said, this is *mostly* complete.
+
+- # Make sure the queue starts with a nonzero value
+maxDigit:9 # Controls the output base
+
+# Most one-letter variables will be reserved to hold their ASCII value, except for two:
+# 'x' will be used for argument passing, and 'n' will hold the queue size.
+n:1
+
+# Assumes there are n+2 total values in the queue
+decrementSecondLast{
+   n::= -=
+}
+
+# Takes input in 'x' and prints the character with that value
+putchar{
+   xInverse:256_x
+   m:n_1
+   \ xInverse::decrementSecondLast n::= */ m::=
+}
+
+newline{
+   x:10 putchar
+}
+
+bottlesOfBeer{
+   space:32
+   b:98
+   o:111
+   t:116
+   l:108
+   e:101
+   s:115
+   f:102
+   r:114
+
+   x:space putchar
+   x:b putchar
+   x:o putchar
+   x:t putchar putchar
+   x:l putchar
+   x:e putchar
+   x:s putchar
+   x:space putchar
+   x:o putchar
+   x:f putchar
+   x:space putchar
+   x:b putchar
+   x:e putchar putchar
+   x:r putchar
+}
+
+onTheWall{
+   space:32
+   o:111
+   letterN:110
+   t:116
+   h:104
+   e:101
+   w:119
+   a:97
+   l:108
+
+   x:space putchar
+   x:o putchar
+   x:letterN putchar
+   x:space putchar
+   x:t putchar
+   x:h putchar
+   x:e putchar
+   x:space putchar
+   x:w putchar
+   x:a putchar
+   x:l putchar putchar
+}
+
+takeOneDownPassItAround{
+   T:84
+   a:97
+   k:107
+   e:101
+   space:32
+   o:111
+   letterN:110
+   d:100
+   w:119
+   comma:44
+   p:112
+   s:115
+   i:105
+   t:116
+   r:114
+   u:117
+
+   x:T putchar
+   x:a putchar
+   x:k putchar
+   x:e putchar
+   x:space putchar
+   x:o putchar
+   x:letterN putchar
+   x:e putchar
+   x:space putchar
+   x:d putchar
+   x:o putchar
+   x:w putchar
+   x:letterN putchar
+   x:comma putchar
+   x:space putchar
+   x:p putchar
+   x:a putchar
+   x:s putchar putchar
+   x:space putchar
+   x:i putchar
+   x:t putchar
+   x:space putchar
+   x:a putchar
+   x:r putchar
+   x:o putchar
+   x:u putchar
+   x:letterN putchar
+   x:d putchar
+   x:comma putchar
+   x:space putchar
+}
+
+# Replaces the value at queue position x+1 with two copies of 256 minus that value
+duplicateInverse{
+   rest:n_x_2
+   # If k is the value to be duplicated:
+   # { 255, [...x], k', [...rest] }
+   shiftAmount:x+1
+   shiftAmount::= # { k', [...rest], 255, [...x] }
+   \ # { [...rest], 255, [...x], k', k, k }
+      rest::= # { 255, [...x], k', k, k, [...rest] }
+      \ # { [...x], k', k, k, [...rest], 255, 0, 0 }
+         x::= # { k', k, k, [...rest], 255, 0, 0, [...x] }
+         \ # { k, k, [...rest], 255, 0, 0, [...x], k', 0, 0 }
+            -- # { [...rest], 255, 0, 0, [...x], k', 0, 0, k, k }
+            shiftAmount:rest+3+x
+            shiftAmount::= # { k', 0, 0, k, k, [...rest], 255, 0, 0, [...x] }
+            - # { 0, 0, k, k, [...rest], 255, 0, 0, [...x], k' }
+            \/\/ # { k, k, [...rest], 255, 0, 0, [...x], k' }
+            shiftAmount:2+rest+3+x
+            shiftAmount::= # { k', k, k, [...rest], 255, 0, 0, [...x] }
+         / # { k, k, [...rest], 255, 0, 0, [...x] }
+         shiftAmount:rest+3
+         shiftAmount::= # { 0, 0, [...x], k, k, [...rest], 255 }
+      / # { 0, [...x], k, k, [...rest], 255 }
+   / # { [...x], k, k, [...rest], 255 }
+   n::= # { 255, [...x], k, k, [...rest] }
+   n:n+1
+}
+
+# Replaces the value at queue position x+1 with 256 minus that value
+invert{
+   rest:n_x_2
+   # If k is the value to be inverted:
+   # { 255, [...x], k, [...rest] }
+   shiftAmount:x+1
+   shiftAmount::= # { k, [...rest], 255, [...x] }
+   \ # { [...rest], 255, [...x], k, k', 0 }
+      shiftAmount:rest+1+x
+      shiftAmount::= # { k, k', 0, [...rest], 255, [...x] }
+      \ # { k', 0, [...rest], 255, [...x], k, 0, 0 }
+        - # { 0, [...rest], 255, [...x], k, 0, 0, k' }
+        shiftAmount:1+rest+1+x
+        shiftAmount::= # { k, 0, 0, k', 0, [...rest], 255, [...x] }
+        -\/\/ # { k', 0, [...rest], 255, [...x], k }
+        shiftAmount:2+rest+1+x
+        shiftAmount::= # { k, k', 0, [...rest], 255, [...x] }
+      / # { k', 0, [...rest], 255, [...x] }
+      = # { 0, [...rest], 255, [...x] , k' }
+   / # { [...rest], 255, [...x] , k' }
+   rest::=
+}
+
+duplicateNonZero{
+   invert duplicateInverse
+}
+
+helperForAddAsciiZero{
+   shiftAmount:n_1
+   shiftAmount::= -
+}
+
+addAsciiZero{
+   asciiZero:48
+   decrementAmount:256_asciiZero
+   repeatAmount:decrementAmount_1
+   initialShiftAmount:x+1
+   initialShiftAmount::= -
+   repeatAmount::helperForAddAsciiZero
+   finalShiftAmount:n_x_2
+   finalShiftAmount::=
+}
+
+printNumber{
+   x:0 duplicateNonZero
+   x:0 addAsciiZero
+   cycleAmount:n_1
+   =- cycleAmount::= * n:n_1
+   cycleAmount:n_1
+   cycleAmount::=
+   x:1 duplicateNonZero
+   x:1 addAsciiZero
+   cycleAmount:n_1
+   ==- cycleAmount::= * n:n_1
+   cycleAmount:n_2
+   cycleAmount::=
+}
+
+# Causes a compilation error if n != x
+assertNEquals{
+   shouldBeZero:n_x
+   shouldBeZero::&
+   shouldBeZero:x_n
+   shouldBeZero::&
+}
+
+reallocSecondDigit{
+   x:2 assertNEquals
+   # { 255, digit1 }
+   =\ # { 255, digit1, digit2, 0 }
+      n:4
+      repeatCount:maxDigit+1
+      repeatCount::==-=
+      x:1 invert
+      ===
+   /
+   n:3
+}
+
+# Since I don't have division yet, I'm going to store two 1-digit numbers
+\=- maxDigit::==- / n:2
+x:0 duplicateInverse
+
+printNumber
+bottlesOfBeer
+onTheWall
+x:44 putchar x:32 putchar
+printNumber
+bottlesOfBeer
+x:33 putchar newline
+takeOneDownPassItAround
+==-
+
+# { 255, digit1, digit2 }
+=\ # { digit2, 255, digit1, 0, 0 }
+   ===\/\/\ # { 255, digit1, digit2, 0, 0 }
+      ===\/\/
+      printNumber
+      bottlesOfBeer
+      onTheWall
+      x:46 putchar newline newline
+      printNumber
+      bottlesOfBeer
+      onTheWall
+      x:44 putchar x:32 putchar
+      printNumber
+      bottlesOfBeer
+      x:33 putchar newline
+      takeOneDownPassItAround
+   ==-==/ n:n_1 # { 255, digit1 }
+   reallocSecondDigit
+   # { 255, digit1, digit2 }
+=-==/
