@@ -6,8 +6,9 @@ assert from ./assert.civet
 TokenType ::= keyof typeof tokens
 tokenEntries := Object.entries(tokens) as [TokenType, Token][]
 
-class TokenStream <: Iterable<[string, TokenType]>
+class TokenStream <: Iterable<[string, TokenType, [number, number]]>
     #program: string
+    #sourceLocation = [1, 1] as tuple
 
     @(#program: string)
 
@@ -18,9 +19,15 @@ class TokenStream <: Iterable<[string, TokenType]>
                 if length > 0
                     chunk := #program[...length]
                     #program |>= &[length...]
-                    yield [chunk, type] as tuple
+                    yield [chunk, type, #sourceLocation] as tuple
+                    linesInChunk := chunk.split '\n'
+                    if linesInChunk# > 1
+                        #sourceLocation.0 += linesInChunk# - 1
+                        #sourceLocation.1 = 1
+                    #sourceLocation.1 += linesInChunk.-1#
                     continue outer
-            throw new SyntaxError `Unrecognized token starting with '${#program.0}'`
+            throw new SyntaxError
+                `Unrecognized token starting with '${#program.0}' at input:${#sourceLocation.join ':'}`
 
 function collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean)
     loop
@@ -28,10 +35,10 @@ function collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean)
         break if next.done or pred next.value
         yield next.value
 
-processExpression := (expr: string) =>
+processExpression := (expr: string, line: number, column: number) =>
     processSplits := (parts: string[]): Ast.NumberSyntaxTree =>
         if parts# % 2 is 0
-            throw new SyntaxError `Incomplete expression: '${parts.join ''}'`
+            throw new SyntaxError `Incomplete expression: '${parts.join ''}' (near input:${line}:${column})`
         if parts# > 2
             type := switch parts.-2
                 '+'
@@ -39,7 +46,8 @@ processExpression := (expr: string) =>
                 '_'
                     'subtraction' as const
                 else
-                    throw new SyntaxError `Missing operator in expression containing '${parts[-3...].join ''}'`
+                    throw new SyntaxError
+                        `Missing operator in expression containing '${parts[-3...].join ''}' (near input:${line}:${column})`
             {
                 type
                 value:
@@ -50,7 +58,7 @@ processExpression := (expr: string) =>
             part := parts.0
             switch part
                 '+', '_'
-                    throw new SyntaxError 'Unexpected operator with no operands'
+                    throw new SyntaxError `Unexpected operator with no operands (near input:${line}:${column})`
                 /\p{Letter}+/v
                     type: 'variable', value: part
                 /[0-9]+/
@@ -67,8 +75,8 @@ processExpression := (expr: string) =>
             [el]
     return processSplits splits
 
-processTokenStream := (stream: IterableIterator<[string, TokenType]>): Ast.Program =>
-    for [content, type] of stream
+processTokenStream := (stream: IterableIterator<[string, TokenType, [number, number]]>): Ast.Program =>
+    for [content, type, [line, column]] of stream
         switch type
             'comment', 'newlines', 'whitespace'
                 ;
@@ -81,13 +89,13 @@ processTokenStream := (stream: IterableIterator<[string, TokenType]>): Ast.Progr
                 type: 'code' as const, value: content
             'numberDefinition'
                 [name, expr] := content.split ':'
-                contents := processExpression expr
+                contents := processExpression expr, line, column
                 type: 'definition' as const, value: { name, contents }
             'template'
                 [number, code] := content.split '::'
-                type: 'template' as const, value: { number, code }
+                type: 'template' as const, value: { number, code, raw: content }
             else
-                throw new SyntaxError `Unexpected token '${content}'`
+                throw new SyntaxError `Unexpected token '${content}' at input:${line}:${column}`
 
 export default parse := (program: string) =>
     stream := new TokenStream program

@@ -8,7 +8,7 @@ export CodeSegment ::=
     | type: 'code', value: string
     | type: 'function', value: { name: string, contents: CodeSegment[] }
     | type: 'definition', value: { name: string, contents: NumberSyntaxTree }
-    | type: 'template', value: { number: string, code: string }
+    | type: 'template', value: { number: string, code: string, raw: string }
     | type: 'functionCall', value: string
 
 export Program ::= CodeSegment[]

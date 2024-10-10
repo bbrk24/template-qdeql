@@ -47,18 +47,25 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
                     functions.get(name)!
                     indent
                     indentationLevel + 1
-            { type: 'template', value: { number, code } }
+            { type: 'template', value: { number, code, raw } }
                 unless numbers.has number
                     throw new ReferenceError `Undefined number '${number}'`
-                if /\p{Letter}+/v.test code
-                    unless functions.has code
-                        throw new ReferenceError `Call to undefined function '${code}'`
-                    return.value += compile(
-                        functions.get(code)!
-                        indent
-                        indentationLevel + 1
-                    ).repeat(numbers.get(number)!)
-                else
-                    return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
+                try
+                    if /\p{Letter}+/v.test code
+                        unless functions.has code
+                            throw new ReferenceError `Call to undefined function '${code}'`
+                        return.value += compile(
+                            functions.get(code)!
+                            indent
+                            indentationLevel + 1
+                        ).repeat(numbers.get(number)!)
+                    else
+                        return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
+                catch err
+                    if err <? RangeError
+                        throw new Error
+                            `${err.message} (evaluating '${raw}')`
+                            cause: err
+                    throw err
 
 export default compile as (ast: Ast.Program, indent: string) => string
