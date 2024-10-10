@@ -116,7 +116,12 @@ process.exitCode = do =>
                 console.error makeErrorString err
             return 1
     else if argv.output?
-        try writeFileSync argv.output, result catch err
+        try
+            writeFileSync
+                argv.output
+                result
+                encoding: 'ascii', mode: 0o644
+        catch err
             console.error `Could not save program: ${makeErrorString err}`
             return 1
     else

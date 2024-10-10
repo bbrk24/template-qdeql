@@ -1,10 +1,15 @@
 // @ts-nocheck
 
-{ readdir } from node:fs/promises
-* as esbuild from esbuild
+{ chmod, readdir } from node:fs/promises
+{ build } from esbuild
 civetPlugin from @danielx/civet/esbuild
 
-await esbuild.build
+await build
+    entryPoints:
+        readdir 'src/'
+            |> await
+            |> .filter .endsWith '.civet'
+            |> .map ('src/'+)
     platform: 'node'
     outdir: 'dist/'
     format: 'esm'
@@ -15,9 +20,6 @@ await esbuild.build
             ts: 'preserve'
     minifySyntax: true
     banner: js: '#!/usr/bin/env node'
-    entryPoints:
-        readdir 'src/'
-            |> await
-            |> .filter .endsWith '.civet'
-            |> .map ('src/'+)
+    target: 'node20.12'
 
+await chmod 'dist/index.mjs', 0o755

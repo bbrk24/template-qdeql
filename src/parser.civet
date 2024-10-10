@@ -9,7 +9,7 @@ tokenEntries := Object.entries(tokens) as [TokenType, Token][]
 class TokenStream <: Iterable<[string, TokenType]>
     #program: string
 
-    constructor(#program: string)
+    @(#program: string)
 
     *[Symbol.iterator]()
         :outer while #program#
@@ -20,10 +20,9 @@ class TokenStream <: Iterable<[string, TokenType]>
                     #program |>= &[length...]
                     yield [chunk, type] as tuple
                     continue outer
-            throw new SyntaxError `Unrecognized token starting with '${#program[0]}'`
-        ;
+            throw new SyntaxError `Unrecognized token starting with '${#program.0}'`
 
-function* collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean): Generator<T, void>
+function collectUntil<T>(iter: Iterator<T>, pred: (arg: T) => boolean)
     loop
         next := iter.next()
         break if next.done or pred next.value
@@ -57,7 +56,7 @@ processExpression := (expr: string) =>
                 /[0-9]+/
                     type: 'literal', value: Number part
                 else
-                    fail()
+                    fail();
     
     splitsAndEmpty := expr.split /(\+|_|\p{Letter}+|[0-9]+)/gv
     splits := splitsAndEmpty.flatMap (el, i) =>
