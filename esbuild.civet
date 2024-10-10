@@ -20,6 +20,5 @@ await build
             ts: 'preserve'
     minifySyntax: true
     banner: js: '#!/usr/bin/env node'
-    target: 'node20.12'
 
 await chmod 'dist/index.mjs', 0o755
