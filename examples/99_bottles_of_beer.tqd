@@ -1,7 +1,3 @@
-# WIP: This doesn't handle the ending correctly.
-# It says "01 bottles" instead of "1 bottle", and prints out most of a verse for 0 before realizing it should have stopped.
-# That being said, this is *mostly* complete.
-
 - # Make sure the queue starts with a nonzero value
 maxDigit:9 # Controls the output base
 
@@ -25,16 +21,13 @@ newline{
    x:10 putchar
 }
 
-bottlesOfBeer{
+bottle{
    space:32
    b:98
    o:111
    t:116
    l:108
    e:101
-   s:115
-   f:102
-   r:114
 
    x:space putchar
    x:b putchar
@@ -42,7 +35,16 @@ bottlesOfBeer{
    x:t putchar putchar
    x:l putchar
    x:e putchar
-   x:s putchar
+}
+
+ofBeer{
+   space:32
+   o:111
+   f:102
+   b:98
+   e:101
+   r:114
+
    x:space putchar
    x:o putchar
    x:f putchar
@@ -50,6 +52,12 @@ bottlesOfBeer{
    x:b putchar
    x:e putchar putchar
    x:r putchar
+}
+
+bottlesOfBeer{
+   bottle
+   x:115 putchar
+   ofBeer
 }
 
 onTheWall{
@@ -197,13 +205,19 @@ addAsciiZero{
    finalShiftAmount::=
 }
 
-printNumber{
-   x:0 duplicateNonZero
-   x:0 addAsciiZero
-   cycleAmount:n_1
-   =- cycleAmount::= * n:n_1
-   cycleAmount:n_1
+printUnadjustedDigit{
+   arg:x
+   duplicateNonZero
+   x:arg addAsciiZero
+   shiftAmount:arg+1
+   shiftAmount::=
+   * n:n_1
+   cycleAmount:n_shiftAmount
    cycleAmount::=
+}
+
+printNumber{
+   x:0 printUnadjustedDigit
    x:1 duplicateNonZero
    x:1 addAsciiZero
    cycleAmount:n_1
@@ -233,10 +247,34 @@ reallocSecondDigit{
    n:3
 }
 
+increment{
+   rest:n_x_2
+   \ # { [...x], k, [...rest], 255, 0, loopCounter }
+      shiftAmount:x+1+rest+2
+      shiftAmount::= # { loopCounter, [...x], k, [...rest], 255, 0 }
+      - # { [...x], k, [...rest], 255, 0, loopCounter }
+      shiftAmount::= # { loopCounter, [...x], k, [...rest], 255, 0 }
+      \ # { [...x], k, [...rest], 255, 0, loopCounter, 0, 0 }
+         x::= # { k, [...rest], 255, 0, loopCounter, 0, 0, [...x] }
+         - # { [...rest], 255, 0, loopCounter, 0, 0, [...x], k }
+         shiftAmount:rest+2
+         shiftAmount::= # { loopCounter, 0, 0, [...x], k, [...rest], 255, 0 }
+         -\/\/ # { [...x], k, [...rest], 255, 0, loopCounter }
+         shiftAmount:x+1+rest+2
+         shiftAmount::= # { loopCounter, [...x], k, [...rest], 255, 0 }
+      / # { [...x], k, [...rest], 255, 0 }
+      n::= # { 0, [...x], k, [...rest], 255 }
+   / # { [...x], k, [...rest], 255 }
+   shiftAmount:n_1
+   shiftAmount::=
+}
+
 # Since I don't have division yet, I'm going to store two 1-digit numbers
 \=- maxDigit::==- / n:2
 x:0 duplicateInverse
+=-=
 
+# Print the start: First half of verse 99
 printNumber
 bottlesOfBeer
 onTheWall
@@ -247,6 +285,7 @@ x:33 putchar newline
 takeOneDownPassItAround
 ==-
 
+# Main loop: Verses 99-10
 # { 255, digit1, digit2 }
 =\ # { digit2, 255, digit1, 0, 0 }
    ===\/\/\ # { 255, digit1, digit2, 0, 0 }
@@ -266,4 +305,43 @@ takeOneDownPassItAround
    ==-==/ n:n_1 # { 255, digit1 }
    reallocSecondDigit
    # { 255, digit1, digit2 }
-=-==/
+=-==/- n:n_1 # { 255, digit2 }
+x:2 assertNEquals
+
+# 1-digit loop: verses 10-2
+=-=\ # { 255, digit2, 0, 0 }
+   ==\/\/ # { 255, digit2 }
+   x:0 increment
+   x:0 printUnadjustedDigit
+   bottlesOfBeer
+   onTheWall
+   x:46 putchar newline newline
+   x:0 printUnadjustedDigit
+   bottlesOfBeer
+   onTheWall
+   x:44 putchar x:32 putchar
+   x:0 printUnadjustedDigit
+   bottlesOfBeer
+   x:33 putchar newline
+   takeOneDownPassItAround
+=-=-=/ n:n_1
+x:1 assertNEquals
+
+# Ending
+x:asciiZero+1 putchar
+bottle ofBeer
+onTheWall
+x:46 putchar newline newline
+
+x:asciiZero+1 putchar
+bottle ofBeer
+onTheWall
+x:44 putchar x:32 putchar
+x:asciiZero+1 putchar
+bottle ofBeer
+x:33 putchar newline
+takeOneDownPassItAround
+x:110 putchar x:111 putchar
+bottlesOfBeer
+onTheWall
+x:46 putchar newline
