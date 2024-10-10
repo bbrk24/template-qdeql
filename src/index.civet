@@ -57,7 +57,7 @@ argv := await yargs process.argv[2...]
             alias: 'e'
             choices: encodings
             default: 'utf8'
-            describe: 'What encoding to use for input' // output is always ASCII
+            describe: 'What encoding to use for input' // output is always UTF-8
             coerce: (enc) =>
                 // ignore case, and allow 'utf-16le' as a synonym for 'utf16le'
                 littleEnc := enc.toLowerCase()
@@ -125,7 +125,7 @@ process.exitCode = do =>
             writeFileSync
                 argv.output
                 result
-                encoding: 'ascii', mode: 0o644
+                mode: 0o644
         catch err
             console.error `Could not save program: ${makeErrorString err}`
             return 1
