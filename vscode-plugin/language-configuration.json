@@ -18,5 +18,5 @@
         ["\\", "/"]
     ],
     "autoCloseBefore": "}/ \t\n",
-    "wordPattern": "\\p{Letter}+"
+    "wordPattern": "[A-Za-z]+"
 }
