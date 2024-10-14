@@ -8,8 +8,8 @@ regexpToken := (regexp: RegExp): Token =>
     assert => regexp.hasIndices and not (or) regexp.sticky, regexp.global
     {
         matchLength(str)
-            if pair? := regexp.exec(str)?.indices![0]
-                return pair[1] if pair[0] is 0
+            if pair? := regexp.exec(str)?.indices!.0
+                return pair.1 if pair.0 is 0
             -1
     }
 

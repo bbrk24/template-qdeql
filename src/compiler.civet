@@ -54,11 +54,12 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
                     if /\p{Letter}+/v.test code
                         unless functions.has code
                             throw new ReferenceError `Call to undefined function '${code}'`
+                        repeatCount := numbers.get(number)!
                         return.value += compile(
                             functions.get(code)!
                             indent
                             indentationLevel + 1
-                        ).repeat(numbers.get(number)!)
+                        ).repeat(repeatCount)
                     else
                         return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
                 catch err

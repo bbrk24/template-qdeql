@@ -1,4 +1,4 @@
-'civet coffeeDo coffeePrototype'
+'civet coffeeDo'
 
 /*!
 Copyright 2024 William Baker
@@ -82,7 +82,7 @@ argv := await yargs process.argv[2...]
 makeErrorString := (err: ???): string =>
     if err <? Error
         if process.env.DEBUG
-            if Object::hasOwnProperty.call err, 'cause'
+            if Object.hasOwn err, 'cause'
                 return `${err.name}: ${err.message}\ncause: ${makeErrorString err.cause}`
             else if err.stack?
                 return err.stack
