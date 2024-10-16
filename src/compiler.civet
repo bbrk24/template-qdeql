@@ -59,7 +59,7 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
                             functions.get(code)!
                             indent
                             indentationLevel + 1
-                        ).repeat(repeatCount)
+                        ).repeat repeatCount
                     else
                         return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
                 catch err

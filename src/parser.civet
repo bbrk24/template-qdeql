@@ -6,7 +6,7 @@ assert from ./assert.civet
 TokenType ::= keyof typeof tokens
 tokenEntries := Object.entries(tokens) as [TokenType, Token][]
 
-class TokenStream <: Iterable<[string, TokenType, [number, number]]>
+class TokenStream <: Iterable<[string, TokenType, readonly [number, number]]>
     #program: string
     #sourceLocation = [1, 1] as tuple
 
@@ -75,7 +75,7 @@ processExpression := (expr: string, line: number, column: number) =>
             [el]
     return processSplits splits
 
-processTokenStream := (stream: IterableIterator<[string, TokenType, [number, number]]>): Ast.Program =>
+processTokenStream := (stream: IterableIterator<[string, TokenType, readonly [number, number]]>): Ast.Program =>
     for [content, type, [line, column]] of stream
         switch type
             'comment', 'newlines', 'whitespace'

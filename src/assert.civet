@@ -3,6 +3,6 @@
 
 export default assert :=
     if env.DEBUG
-        (cond: => boolean) => ok(cond())
+        (cond: => boolean) => ok cond()
     else
         =>

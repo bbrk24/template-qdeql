@@ -4,7 +4,7 @@
 { promisify } from node:util
 assert from ./assert.civet
 
-readAsync := promisify(read)
+readAsync := promisify read
 
 // This is ridiculous.
 export default class StdinReader
@@ -26,7 +26,8 @@ export default class StdinReader
                 .once 'close', =>
                     #closed = true
                     // If a reader was waiting on input and the buffer is empty, it needs a 0
-                    if #resolve? and not #buffer?#
+                    if #resolve?
+                        assert => not #buffer?#
                         #buffer = Buffer.alloc 1
                         #resolve()
                         #resolve = undefined
@@ -42,12 +43,16 @@ export default class StdinReader
             return = #buffer!.0
             #buffer = #buffer!.subarray 1
         else
-            buf := Buffer.alloc 1
-            await readAsync 0, buf, 0, 1, null
-            return buf.0
+            #buffer ?= Buffer.alloc 1
+            { bytesRead } := await readAsync 0, #buffer, 0, 1, null
+            if bytesRead is 0
+                #closed = true
+                #buffer = undefined
+                return 0
+            else
+                return #buffer.0
     
     close(): void
         #rl?.close() unless #closed
-        assert => not #resolve?
         #closed = true
         #rl = undefined

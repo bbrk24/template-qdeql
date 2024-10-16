@@ -20,11 +20,9 @@ stringToken := (tokenStr: string): Token =>
 // c'tor directly should be more efficient, right? :clueless:
 [whitespaceRegexp, newlinesRegexp, commentRegexp] := comptime 
     newlines := String.raw'[\n\v\f\r\x85\u2028\u2029]'
-    return [
-        new RegExp `[\\s--${newlines}]+`, 'dv'
-        new RegExp newlines + '+', 'du'
-        new RegExp `#.*(?=${newlines})`, 'du'
-    ]
+    . new RegExp `[\\s--${newlines}]+`, 'dv'
+    . new RegExp newlines + '+', 'du'
+    . new RegExp `#.*(?=${newlines})`, 'du'
 
 export tokens := {
     qdeql: regexpToken /[\\/=*&-]+/d
