@@ -1,19 +1,5 @@
 { writeSync } from node:fs
-
-// @ts-ignore
-stdQueue from std-queue
-declare class StdQueue<T>
-    get length(): number
-    push(...elems: T[]): void
-    shift(): T?
-    peek(): T?
-    last(): T?
-    clear(): void
-    private top
-    private bottom
-    private _size
-Queue := stdQueue.'default' as typeof StdQueue
-
+Queue from std-queue
 assert from ./assert.civet
 StdinReader from ./getchar.civet
 
@@ -42,10 +28,8 @@ export default run := (s: string, enc: BufferEncoding): Promise<void> =>
                     front := q.shift() ?? 0
                     try
                         putchar front
-                    catch e
-                        if e <? Error and e.message.startsWith 'EPIPE:'
-                            return
-                        throw e
+                    catch { message: /^EPIPE:/ }
+                        return
                 '&'
                     q.push await reader.getchar()
                 '\\'

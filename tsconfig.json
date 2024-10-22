@@ -3,6 +3,8 @@
         "strict": true,
         "lib": ["ES2023", "ESNext.Regexp"],
         "target": "ESNext",
-        "module": "ES2022"
+        "module": "ES2022",
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "Node"
     }
 }
