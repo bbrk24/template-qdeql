@@ -7,9 +7,7 @@ TokenType ::= keyof typeof tokens
 tokenEntries := Object.entries(tokens) as [TokenType, Token][]
 
 class TokenStream <: Iterable<[string, TokenType, readonly [number, number]]>
-    #program: string
     #sourceLocation = [1, 1] as tuple
-
     @(#program: string)
 
     *[Symbol.iterator]()
@@ -17,8 +15,8 @@ class TokenStream <: Iterable<[string, TokenType, readonly [number, number]]>
             for [type, token] of tokenEntries
                 length := token.matchLength #program
                 if length > 0
-                    chunk := #program[...length]
-                    #program |>= &[length...]
+                    chunk := #program[..<length]
+                    #program |>= &[length<=..]
                     yield [chunk, type, #sourceLocation] as tuple
                     linesInChunk := chunk.split '\n'
                     if linesInChunk# > 1
@@ -75,7 +73,7 @@ processExpression := (expr: string, line: number, column: number) =>
             [el]
     return processSplits splits
 
-processTokenStream := (stream: IterableIterator<[string, TokenType, readonly [number, number]]>): Ast.Program =>
+processTokenStream := (stream: IterableIterator [string, TokenType, readonly [number, number]]): Ast.Program =>
     for [content, type, [line, column]] of stream
         switch type
             'comment', 'newlines', 'whitespace'

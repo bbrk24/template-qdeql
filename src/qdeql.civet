@@ -1,5 +1,8 @@
 { writeSync } from node:fs
-Queue from std-queue
+
+* as stdqueue from std-queue
+Queue := (stdqueue.default as! typeof stdqueue).default
+
 assert from ./assert.civet
 StdinReader from ./getchar.civet
 

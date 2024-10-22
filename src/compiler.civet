@@ -1,8 +1,8 @@
 { fail } from node:assert
 type * as Ast from ./astTypes.civet
 
-let functions: Map<string, Ast.Program>
-let numbers: Map<string, number>
+let functions: Map string, Ast.Program
+let numbers: Map string, number
 
 evaluateNumber := (expr: Ast.NumberSyntaxTree): number =>
     switch expr

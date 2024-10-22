@@ -17,7 +17,7 @@ await build
     plugins:
         . civetPlugin
             parseOptions: { +comptime, rewriteCivetImports: '.mjs' }
-            ts: 'preserve'
+            ts: 'tsc'
     minifySyntax: true
     banner: js: '#!/usr/bin/env node'
 
