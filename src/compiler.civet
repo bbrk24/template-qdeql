@@ -1,5 +1,6 @@
 { fail } from node:assert
 type * as Ast from ./astTypes.civet
+StackTracingError from ./stackTracingError.civet
 
 let functions: Map string, Ast.Program
 let numbers: Map string, number
@@ -64,9 +65,9 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
                         return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
                 catch err
                     if err <? RangeError
-                        throw new Error
-                            `${err.message} (evaluating '${raw}')`
-                            cause: err
+                        err |>= new StackTracingError
+                    if err <? StackTracingError
+                        err.addCall raw
                     throw err
 
 export default compile as (ast: Ast.Program, indent: string) => string

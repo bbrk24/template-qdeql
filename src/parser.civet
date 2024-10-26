@@ -98,6 +98,3 @@ processTokenStream := (stream: IterableIterator [string, TokenType, readonly [nu
 export default parse := (program: string) =>
     stream := new TokenStream program
     processTokenStream stream.:iterator()
-            
-    
-    

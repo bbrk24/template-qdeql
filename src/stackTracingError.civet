@@ -1,0 +1,9 @@
+{ env } from node:process
+
+export default class StackTracingError < Error
+    @(err: Error)
+        super(err.message, { cause: err })
+        @{name} = env.DEBUG ? @constructor : err
+    
+    addCall(name: string)
+        @message += '\n    at ' + name
