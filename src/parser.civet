@@ -10,7 +10,7 @@ class TokenStream <: Iterable<[string, TokenType, readonly [number, number]]>
     #sourceLocation = [1, 1] as tuple
     @(#program: string)
 
-    *[Symbol.iterator]()
+    :iterator()
         :outer while #program#
             for [type, token] of tokenEntries
                 length := token.matchLength #program
@@ -97,7 +97,7 @@ processTokenStream := (stream: IterableIterator [string, TokenType, readonly [nu
 
 export default parse := (program: string) =>
     stream := new TokenStream program
-    processTokenStream stream[Symbol.iterator]()
+    processTokenStream stream.:iterator()
             
     
     
