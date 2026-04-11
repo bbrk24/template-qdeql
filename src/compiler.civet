@@ -56,11 +56,13 @@ compile := (ast: Ast.Program, indent: string, indentationLevel = 0) =>
                         unless functions.has code
                             throw new ReferenceError `Call to undefined function '${code}'`
                         repeatCount := numbers.get(number)!
-                        return.value += compile(
-                            functions.get(code)!
-                            indent
-                            indentationLevel + 1
-                        ).repeat repeatCount
+                        // Prevent side effects (setting variables) when the count is 0
+                        if repeatCount > 0
+                            return.value += compile(
+                                functions.get(code)!
+                                indent
+                                indentationLevel + 1
+                            ).repeat repeatCount
                     else
                         return.value += indent.repeat(indentationLevel) + code.repeat(numbers.get(number)!) + '\n'
                 catch err
